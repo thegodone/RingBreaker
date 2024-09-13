@@ -10,14 +10,14 @@ import functools
 import pickle
 from functools import partial
 
-import keras
-from keras.layers import Dense, Dropout, Activation
-from keras.models import Sequential, load_model
-from keras.optimizers import Adam
-from keras.losses import categorical_crossentropy
-from keras.metrics import top_k_categorical_accuracy
-from keras.utils import Sequence
-from keras.callbacks import EarlyStopping, CSVLogger, ModelCheckpoint, Callback, TensorBoard, ReduceLROnPlateau
+import tensorflow as tf
+from tensorflow.keras.layers import Dense, Dropout, Activation
+from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import categorical_crossentropy
+from tensorflow.keras.metrics import top_k_categorical_accuracy
+from tensorflow.keras.utils import Sequence
+from tensorflow.keras.callbacks import EarlyStopping, CSVLogger, ModelCheckpoint, Callback, TensorBoard, ReduceLROnPlateau
 
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import shuffle
@@ -74,10 +74,10 @@ class Model:
         
         #Initialise policy
         # Define top k accuracies
-        top10_acc = functools.partial(keras.metrics.top_k_categorical_accuracy, k=10)
+        top10_acc = functools.partial(tf.keras.metrics.top_k_categorical_accuracy, k=10)
         top10_acc.__name__ = 'top10_acc'
 
-        top50_acc = functools.partial(keras.metrics.top_k_categorical_accuracy, k=50)
+        top50_acc = functools.partial(tf.keras.metrics.top_k_categorical_accuracy, k=50)
         top50_acc.__name__ = 'top50_acc'
         
         self.policy = load_model(self.model, custom_objects={'top10_acc': top10_acc, 'top50_acc': top50_acc})
