@@ -83,8 +83,6 @@ class Model:
         self.policy = load_model(self.model, custom_objects={'top10_acc': top10_acc, 'top50_acc': top50_acc})
 
 
-
-
     def smiles_to_ecfp(self, products, size=2048):
         ecfp_list = []
         for product in products:
@@ -130,8 +128,6 @@ class Model:
     def get_prediction(self, targets):
         ecfp_array = self.smiles_to_ecfp(targets)
         predictions = self.policy.predict(ecfp_array)
-        if self.mask:
-            predictions = np.multiply(predictions, self.filter_array)
         return predictions
 
     def predict_ring_outcomes(self, targets, cutoff=50):
@@ -179,34 +175,7 @@ class Model:
             results["outcomes"] = num_outcomes
             results_list.append(results)
 
-        return results_list
+        dfx_ = pd.DataFrame(results_list)
+        dfx = pd.concat([pd.DataFrame({'target':targets}),dfx_],axis=1)
 
-    def show_topN_predictions(self, target, topN=50):
-        """Given a SMILES predicts the top N ring forming reactions and displays the predictions for visualisation in Jupyter Notebook
-
-        Parameters:
-            target (SMILES): The target SMILES 
-        """
-        prediction = self.get_prediction(target)
-            
-        predicted_templates = self.get_templates(prediction, self.lib, topN+1)
-        sort_pred = np.sort(prediction)[::-1]
-
-        for i in range(1, topN+1):
-            template = predicted_templates[i]['template']
-            outcomes = rdc.rdchiralRunText(template, target)
-            if len(outcomes) != 0:
-                print('###Prediction {}###'.format(str(i)))
-                display(rdChemReactions.ReactionFromSmarts(template))
-                print(sort_pred[-1][-i])
-                print('Classification')
-                print(predicted_templates[i]['classification'])
-                print('Patent ID')
-                print(predicted_templates[i]['ID'])
-                print('---List of precursors---')
-                print(outcomes)
-                display(Chem.MolFromSmiles(outcomes[0]))
-                print('\n')
-
-
-
+        return results_list, dfx
